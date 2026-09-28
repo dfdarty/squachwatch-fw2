@@ -81,7 +81,8 @@ cd squachwatch-fw2
 ~/freewili2-emu/tools/fw2emu hwcheck --fetch-toolchain .   # fits the chip? also builds the UF2
 ```
 
-This needs the emulator from 1.2.0 on, for the radio model and C++ apps.
+This needs the emulator from 1.2.0 on, for the radio model and C++ apps
+(2.0.0 for the chip-speed timing below).
 In the emulator, `--radio @town` fills the air with a small town's worth
 of cameras, a Pineapple and a Flipper. `radio ap …` and `radio ble …` in a
 script add more (see the emulator's
@@ -97,8 +98,8 @@ of stack, and a 5 MB heap in PSRAM.
 
 ## Speed
 
-The emulator runs app code at the RP2350's estimated speed (from the next
-emulator release after 1.2.0), and the port logs where each pass of the
+The emulator runs app code at the RP2350's estimated speed (from emulator
+2.0.0), and the port logs where each pass of the
 main loop goes every 5 s:
 
 ```text
