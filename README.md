@@ -56,7 +56,9 @@ installs apps its own way.
 ## Using it
 
 - **Touch** works as on the CYD.
-- **Grey, yellow, green** press SCAN, LOG and DESK on the button bar.
+- **Grey, yellow, green** press SCAN, LOG and DESK on the button bar. A
+  quick press counts even between two slow frames: the button stays down
+  until SquachWatch has drawn two frames with it.
 - **HOME held 5 s** leaves; **PAGE held 5 s** shows About.
 
 On first start SquachWatch shows its walkthrough, then asks for your zone.
@@ -92,6 +94,26 @@ AddressSanitizer too (`fw2emu test --sanitize .`).
 
 On the real chip (`fw2emu hwcheck`): 926 KB image, 151 KB of SRAM, 22.6 KB
 of stack, and a 5 MB heap in PSRAM.
+
+## Speed
+
+The emulator runs app code at the RP2350's estimated speed (from the next
+emulator release after 1.2.0), and the port logs where each pass of the
+main loop goes every 5 s:
+
+```text
+[fw2] per pass: loop 65.0 ms, screen 30.0 ms, chores 0.4 ms (10 passes/s)
+```
+
+`loop` is SquachWatch's own `loop()`: drawing the scene and the UI into the
+480×320 frame, in software. `screen` is the port finding the rows that
+changed and sending them to the LCD (about half of it on the SPI wire).
+`chores` are input, the radio feed and saving settings.
+
+Estimates for the board: `loop` comes out at about 65 ms natively and
+150 ms in a browser build of the emulator, so expect roughly 4 to 10 frames
+a second, and slower where PSRAM cache misses bite: the whole app runs from
+PSRAM, which the estimate leaves out. The board will settle it.
 
 ## How it's built
 

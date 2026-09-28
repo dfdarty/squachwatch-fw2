@@ -130,16 +130,28 @@ static void screenToRaw(int sx, int sy) {
     SimTouch::rawY = (uint16_t)(py < 0 ? 0 : py > 4095 ? 4095 : py);
 }
 
-static int s_barButton = -1;         // a colour button held: 0 SCAN, 1 LOG, 2 DESK
+// A colour button presses its bar button for as long as it's held -- and for
+// at least two whole passes of loop(), so SquachWatch sees a quick press even
+// when its press and release arrive together, between two slow frames.
+static int      s_barButton = -1;    // a colour button held: 0 SCAN, 1 LOG, 2 DESK
+static bool     s_barReleased;       // let go, but still shown until SquachWatch has seen it
+static uint32_t s_barSince;          // s_loops when it was pressed
+static uint32_t s_loops;             // passes of loop() completed
 
 static void pollInput() {
     uartkbd_event_t ev;
     while (uartkbd_next_event(&ev)) {
         if (ev.btn <= UARTKBD_BTN_GREEN) {
-            if (ev.pressed) s_barButton = (int)ev.btn;
-            else if (s_barButton == (int)ev.btn) s_barButton = -1;
+            if (ev.pressed) {
+                s_barButton = (int)ev.btn;
+                s_barReleased = false;
+                s_barSince = s_loops;
+            } else if (s_barButton == (int)ev.btn) {
+                s_barReleased = true;
+            }
         }
     }
+    if (s_barButton >= 0 && s_barReleased && s_loops - s_barSince >= 2) s_barButton = -1;
     uint16_t x, y;
     if (ft6336_poll(&x, &y)) {
         SimTouch::down = true;
@@ -291,14 +303,36 @@ int main(void) {
     DIAG("squachwatch: ready\n");
 
     AppState shown = state;
+    // Where each pass goes, every 5 s: SquachWatch's loop(), sending the
+    // screen, and the port's chores (input, radio, settings).
+    uint64_t tLoop = 0, tScreen = 0, tChores = 0, since = time_us_64();
+    uint32_t passes = 0;
     for (;;) {
+        uint64_t t0 = time_us_64();
         service();
+        uint64_t t1 = time_us_64();
         loop();
+        uint64_t t2 = time_us_64();
+        s_loops++;
         if (state != shown) {                 // for the log (and the tests): which screen is up
             shown = state;
             DIAG("squachwatch: screen %s\n", fw2StateName(state));
         }
         if (!st7796_flush_busy() || s_first) present();
+        uint64_t t3 = time_us_64();
         fw2_nvs_flush(false);
+        uint64_t t4 = time_us_64();
+        tChores += (t1 - t0) + (t4 - t3);
+        tLoop += t2 - t1;
+        tScreen += t3 - t2;
+        passes++;
+        if (t4 - since >= 5000000u) {
+            DIAG("[fw2] per pass: loop %.1f ms, screen %.1f ms, chores %.1f ms (%u passes/s)\n",
+                 tLoop / 1000.0 / passes, tScreen / 1000.0 / passes, tChores / 1000.0 / passes,
+                 (unsigned)(passes * 1000000ull / (t4 - since)));
+            tLoop = tScreen = tChores = 0;
+            passes = 0;
+            since = t4;
+        }
     }
 }
