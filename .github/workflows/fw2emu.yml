@@ -11,7 +11,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           submodules: recursive     # SquachWatch-CYD
-      - uses: dfdarty/freewili2-emu@v1
+      - uses: dfdarty/freewili2-emu@v2
         with:
           app: .
           hwcheck: true
