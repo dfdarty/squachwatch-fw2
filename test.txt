@@ -1,0 +1,66 @@
+# SquachWatch on the FREE-WILi 2, in the emulator: the stock Wi-Fi and
+# Bluetooth scans report a few ordinary networks and devices, then a Flock
+# camera's access point and a Flipper Zero appear. SquachWatch's own
+# detector must flag them, raise its alert, log them to the SD card, and
+# keep the settings there. test.expect checks the card.
+radio ap 3c:37:86:12:34:56 6 3 -52 NETGEAR42
+radio ap 44:d9:e7:ab:cd:01 1 7 -64 Hernandez Family
+radio ble 5c:f3:70:a1:b2:c3 -63 Galaxy Buds2
+radio ble 7d:4c:21:9e:0a:11 -77
+wait 3000
+expect "squachwatch: ready" 8000
+expect "\[fw2\] Wi-Fi scan 1: 2 networks" 8000
+expect "\[fw2\] Bluetooth scan 1: 2 devices" 8000
+
+# First boot: Squachy's walkthrough (a tap moves it on), then the time-zone
+# card, which the FW2's clock brings up at once. The walkthrough takes every
+# tap until it's done.
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 40
+wait 2500
+touch 240 184               # THIS IS RIGHT
+wait 1500
+screenshot out/main.png device
+
+# Something to find: a Flock camera's setup network, then a Flipper Zero.
+radio ap b4:1e:52:00:11:22 6 3 -58 FLOCK-CAM-2291
+expect "squachwatch: screen ALERT" 20000
+wait 1500
+screenshot out/alert.png device
+touch 240 160               # dismiss
+expect "squachwatch: screen CLEAR" 3000
+radio ble 0c:fa:22:de:ad:01 -59 Flipper Nimbus
+expect "squachwatch: screen ALERT" 20000
+wait 1500
+touch 240 160
+expect "squachwatch: screen CLEAR" 3000
+
+# The colour buttons press the button bar: yellow LOG, grey SCAN (back to
+# the main screen from the log, whose third button is CLR), green DESK.
+press YELLOW
+expect "squachwatch: screen LOG" 3000
+wait 1000
+screenshot out/log.png device
+press GREY
+expect "squachwatch: screen CLEAR" 3000
+press GREEN
+expect "squachwatch: screen DESK" 3000
+wait 1500
+screenshot out/desk.png device
+wait 1500
+quit
