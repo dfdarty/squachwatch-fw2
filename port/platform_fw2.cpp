@@ -166,6 +166,7 @@ static void pollInput() {
 }
 
 // ---- the everyday chores, from the loop and from inside delay() ---------------------
+static void followZone();
 static bool s_inService;
 static void service() {
     if (s_inService) return;                 // a radio callback that delays doesn't nest
@@ -175,6 +176,7 @@ static void service() {
     fw2_radio_pump();
     fw2_nvs_flush(false);
     agentio_task();
+    followZone();
     s_inService = false;
 }
 
@@ -240,13 +242,29 @@ static void redrawAll() { s_first = true; }
 // zone (Clock::applyZone sets TZ), so the board's reading goes through
 // mktime() in that zone, and back through localtime() when SquachWatch
 // learns the time itself.
+//
+// The zone can change after the clock was read -- on first boot it is read
+// before the zone card has been answered, in SquachWatch's default, UTC. The
+// board's wall-clock time is the one to keep, so a new zone means reading
+// the board again: 11:29 on the board stays 11:29, now in the chosen zone,
+// rather than turning into 7:29 in New York.
 static bool s_rtcLoading;
+static bool s_boardClock;                // SquachWatch's time is the board's
+static char s_boardTz[64];               // ... read (or written) in this TZ
+
+static const char* currentTz() { const char* tz = getenv("TZ"); return tz ? tz : ""; }
+static void rememberTz() {
+    s_boardClock = true;
+    strncpy(s_boardTz, currentTz(), sizeof s_boardTz - 1);
+}
+
 static void rtcWrite(uint32_t epoch) {
     if (s_rtcLoading || !s_link) return;
     time_t t = (time_t)epoch;
     struct tm lt;
     localtime_r(&t, &lt);
     ow_hardware_set_time(&s_dev, lt.tm_year + 1900, lt.tm_mon + 1, lt.tm_mday, lt.tm_hour, lt.tm_min, lt.tm_sec);
+    rememberTz();
 }
 static void clockFromBoard() {
     int32_t y, mo, d, wd, h, mi, se;
@@ -262,7 +280,14 @@ static void clockFromBoard() {
     s_rtcLoading = true;
     Clock::setEpoch((uint32_t)e);
     s_rtcLoading = false;
-    DIAG("squachwatch: clock from the board, %04d-%02d-%02d %02d:%02d\n", (int)y, (int)mo, (int)d, (int)h, (int)mi);
+    rememberTz();
+    DIAG("squachwatch: clock from the board, %04d-%02d-%02d %02d:%02d in %s\n", (int)y, (int)mo, (int)d,
+         (int)h, (int)mi, s_boardTz[0] ? s_boardTz : "UTC");
+}
+
+// From the chores: a new zone re-reads the board's local time in it.
+static void followZone() {
+    if (s_boardClock && strcmp(currentTz(), s_boardTz) != 0) clockFromBoard();
 }
 
 // ---- start -----------------------------------------------------------------------------

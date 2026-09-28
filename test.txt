@@ -33,6 +33,11 @@ touch 240 40
 wait 2500
 touch 240 40
 wait 2500
+# The zone card: the board's clock was read in SquachWatch's default zone,
+# UTC. The next zone re-reads it there, keeping the board's local time.
+touch 333 184               # > (the next zone)
+expect "squachwatch: clock from the board, .* in [^U]" 5000
+wait 1000
 touch 240 184               # THIS IS RIGHT
 wait 1500
 screenshot out/main.png device
