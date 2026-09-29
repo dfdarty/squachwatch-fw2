@@ -24,7 +24,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           UF2: ${{ steps.fw2.outputs.uf2 }}
         run: |
-          test -s "$UF2"
+          if [ ! -s "$UF2" ]; then
+            echo "::error title=No UF2::The emulator step gave no UF2: either the real-chip check failed (see its summary), or dfdarty/freewili2-emu@v2 is older than 2.1.0, which added the uf2 output."
+            exit 1
+          fi
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             gh release upload "$GITHUB_REF_NAME" "$UF2" --clobber     # a release made on github.com
           else
