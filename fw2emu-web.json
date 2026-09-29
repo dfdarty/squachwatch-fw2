@@ -1,0 +1,66 @@
+{
+  "source": "https://github.com/dfdarty/squachwatch-fw2",
+  "license": "GPL-3.0",
+  "guide": {
+    "what": "SquachWatch, TalkingSasquach's surveillance-device detector for the ESP32 \"Cheap Yellow Display\", ported to the FREE-WILi 2. Its own firmware runs unmodified; it watches the FREE-WILi 2's Wi-Fi and Bluetooth scans for Flock cameras, ALPR readers, body cams, Flipper Zeros and the like.",
+    "see": "Squachy's walkthrough (a tap moves it on), then a card for your time zone, then the main screen. Nothing is in range until you add something below.",
+    "tryit": [
+      {
+        "label": "Tap through the walkthrough",
+        "send": [
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40",
+          "touch 240 40"
+        ],
+        "gap_ms": 2500,
+        "text": "- nine taps, 2.5 s apart. Then pick your zone with > and press THIS IS RIGHT."
+      },
+      {
+        "label": "Ordinary networks nearby",
+        "send": [
+          "radio ap 3c:37:86:12:34:56 6 3 -52 NETGEAR42",
+          "radio ap 44:d9:e7:ab:cd:01 1 7 -64 Hernandez Family",
+          "radio ble 5c:f3:70:a1:b2:c3 -63 Galaxy Buds2"
+        ],
+        "text": "- two Wi-Fi networks and a pair of earbuds: nothing to flag."
+      },
+      {
+        "label": "A Flock camera appears",
+        "send": [
+          "radio ap b4:1e:52:00:11:22 6 3 -58 FLOCK-CAM-2291"
+        ],
+        "text": "- within a scan or two SquachWatch raises its alert. Tap the card to dismiss it."
+      },
+      {
+        "label": "A Flipper Zero appears",
+        "send": [
+          "radio ble 0c:fa:22:de:ad:01 -59 Flipper Nimbus"
+        ],
+        "text": "- flagged by its Bluetooth name."
+      },
+      {
+        "label": "Walk into town",
+        "send": [
+          "radio load @town"
+        ],
+        "text": "- a small town's worth of cameras, a WiFi Pineapple and a Flipper."
+      },
+      {
+        "text": "The colour buttons press the button bar: grey SCAN, yellow LOG, green DESK (keys 1, 2 and 3). Hold HOME 5 s to leave."
+      },
+      {
+        "text": "The stock scans give network names, hardware prefixes and Bluetooth names only, so trackers found by their advert data (AirTags, Tile, Remote ID) aren't detected yet."
+      }
+    ],
+    "check": "The log shows each scan ([fw2] Wi-Fi scan N: ...) and \"squachwatch: screen ALERT\" when something is found. Detections are logged to the SD card, which lives in memory here.",
+    "panels": [
+      "log"
+    ]
+  }
+}
