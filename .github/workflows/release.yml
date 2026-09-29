@@ -1,0 +1,29 @@
+# On a version tag (v1.0.0, ...): test the port in the FREE-WILi 2 emulator,
+# check it fits the real chip, and publish a GitHub release with the UF2
+# attached (the file you install on the board), as WiliBSP asks of apps.
+name: Release
+on:
+  push:
+    tags: ["v*"]
+permissions:
+  contents: write
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: recursive     # SquachWatch-CYD
+      - id: fw2
+        uses: dfdarty/freewili2-emu@v2
+        with:
+          app: .
+          hwcheck: true
+      - name: Publish the release with the UF2
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UF2: ${{ steps.fw2.outputs.uf2 }}
+        run: |
+          test -s "$UF2"
+          gh release create "$GITHUB_REF_NAME" "$UF2" --title "SquachWatch for the FREE-WILi 2 $GITHUB_REF_NAME" \
+            --notes "Install: copy squachwatch.uf2 to the SD card's /apps folder, then open it from Apps on the device. See the README."

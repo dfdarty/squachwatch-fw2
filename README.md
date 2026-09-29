@@ -53,6 +53,23 @@ the port refuses rather than fake it. Diagnostics will say
 `crypto self-test FAIL`. Over-the-air updates are hidden; the FREE-WILi 2
 installs apps its own way.
 
+## Install it on your FREE-WILi 2
+
+1. Download `squachwatch.uf2` from the latest
+   [release](https://github.com/dfdarty/squachwatch-fw2/releases).
+2. Copy it to the `apps` folder on the FREE-WILi 2's SD card. Any of these
+   works:
+   - the FreeWili GUI's file transfer;
+   - the device's File System menu: `k 1` hands the SD card to your PC as
+     a USB drive, and `k 0` gives it back;
+   - WiliBSP's `fw install-app squachwatch.uf2`.
+3. On the device, open **Apps** and choose **SquachWatch**.
+
+It runs on the display processor with the stock firmware on the MAIN
+processor and the ESP32-C5, whose scans it uses. Hold HOME for 5 s to
+leave it. Its log and settings are kept on the SD card, under
+`/appdata/squachwatch/`.
+
 ## Using it
 
 - **Touch** works as on the CYD.
