@@ -25,5 +25,9 @@ jobs:
           UF2: ${{ steps.fw2.outputs.uf2 }}
         run: |
           test -s "$UF2"
-          gh release create "$GITHUB_REF_NAME" "$UF2" --title "SquachWatch for the FREE-WILi 2 $GITHUB_REF_NAME" \
-            --notes "Install: copy squachwatch.uf2 to the SD card's /apps folder, then open it from Apps on the device. See the README."
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" "$UF2" --clobber     # a release made on github.com
+          else
+            gh release create "$GITHUB_REF_NAME" "$UF2" --title "SquachWatch for the FREE-WILi 2 $GITHUB_REF_NAME" \
+              --notes "Install: copy squachwatch.uf2 to the SD card's /apps folder, then open it from Apps on the device. See the README."
+          fi
