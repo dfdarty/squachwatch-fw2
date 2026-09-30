@@ -14,6 +14,10 @@ All of SquachWatch's UI is here at the 480×320 of its 3.5" build, including
 Squachy, the alert cards, HUNT, LOG, DESK, settings, the dex and diagnostics.
 Detections come from the FREE-WILi 2's stock Wi-Fi and Bluetooth scans.
 
+Landscape only: SquachWatch's rotate button also offers portrait, which the
+port doesn't draw. The screen stops updating until you rotate back to
+landscape.
+
 ## What the stock radio can see
 
 The FREE-WILi 2's radios are on its ESP32-C5, and FREE-WILi's stock
@@ -98,8 +102,10 @@ cd squachwatch-fw2
 ~/freewili2-emu/tools/fw2emu hwcheck --fetch-toolchain .   # fits the chip? also builds the UF2
 ```
 
-This needs the emulator from 1.2.0 on, for the radio model and C++ apps
-(2.0.0 for the chip-speed timing below).
+This needs emulator 2.x (the workflows use `dfdarty/freewili2-emu@v2`):
+1.2.0 added the radio model and C++ apps, 2.0.0 the chip-speed timing, 2.1.0
+the UF2 the release attaches, and 2.2.0 the browser page from
+`fw2emu-web.json`.
 In the emulator, `--radio @town` fills the air with a small town's worth
 of cameras, a Pineapple and a Flipper. `radio ap …` and `radio ble …` in a
 script add more (see the emulator's
@@ -110,7 +116,7 @@ then brings in a Flock camera and a Flipper. It checks both alerts, the
 log lines on the SD card and the saved settings. It runs under
 AddressSanitizer too (`fw2emu test --sanitize .`).
 
-On the real chip (`fw2emu hwcheck`): 926 KB image, 151 KB of SRAM, 22.6 KB
+On the real chip (`fw2emu hwcheck`): 929 KB image, 231 KB of SRAM, 22.3 KB
 of stack, and a 5 MB heap in PSRAM.
 
 ## Speed
