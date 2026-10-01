@@ -2,3 +2,5 @@
 @sd appdata/squachwatch/squachwatch-0.log ^[0-9]+,HACKER,-[0-9]+,0C:FA:22:DE:AD:01,0,Flipper,Flipper Nimbus$
 @sd appdata/squachwatch/nvs/settings.nvs ^b colorchk 1$
 !\[fw2\] the .* scan was refused
+!\[console\] rotation ->
+@sd appdata/squachwatch/nvs/settings.nvs ^b rotlock 1$

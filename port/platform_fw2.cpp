@@ -203,9 +203,23 @@ static uint32_t hashRow(const uint16_t* p, int n) {
     return h;
 }
 
+// Landscape only. With ROTATION LOCK turned off, SquachWatch's rotate button
+// steps through all four orientations; a portrait one is moved on to the
+// next landscape one at once, through SquachWatch's own rotate handler (its
+// console ROT command), so the panel, the buffer and the touch mapping all
+// follow as usual. Rotation 3 shows the same here as 1: the port sends the
+// buffer to the LCD the same way round.
+extern volatile bool g_consoleRotate;
+static void keepLandscape() {
+    if (screenRotation % 2 == 0 && !g_consoleRotate) {
+        DIAG("squachwatch: portrait isn't drawn on the FW2; on to landscape\n");
+        g_consoleRotate = true;
+    }
+}
+
 static void present() {
     const int w = tft.width(), h = tft.height();
-    if (w != LCD_W || h != LCD_H) return;          // only the landscape shape (see README)
+    if (w != LCD_W || h != LCD_H) return;          // landscape only (see keepLandscape)
     const uint16_t* px = tft.pixelsRGB565().data();
     int k = 0;
     for (int y = 0; y < h;) {
@@ -317,10 +331,18 @@ int main(void) {
     // The first-boot colour check is for the CYD family's panel variants.
     // The FW2's panel is one known panel, right at SquachWatch's defaults, so
     // the check is recorded as done (it stays in Settings, as on any board).
+    //
+    // The port draws landscape only (present()), and the FW2's screen sits
+    // landscape in the hand, so SquachWatch's own ROTATION LOCK starts on:
+    // no rotate button in the title bar, and its handler is skipped. A saved
+    // portrait orientation is moved to landscape. keepLandscape() covers the
+    // lock being turned off in Settings.
     {
         Preferences p;
         p.begin("settings", false);
         if (!p.isKey("colorchk")) p.putBool("colorchk", true);
+        if (!p.isKey("rotlock")) p.putBool("rotlock", true);
+        if (p.getUChar("rot", 1) % 2 == 0) p.putUChar("rot", 1);
     }
     setup();
     clockFromBoard();
@@ -337,6 +359,7 @@ int main(void) {
         service();
         uint64_t t1 = time_us_64();
         loop();
+        keepLandscape();
         uint64_t t2 = time_us_64();
         s_loops++;
         if (state != shown) {                 // for the log (and the tests): which screen is up

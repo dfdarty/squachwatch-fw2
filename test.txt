@@ -41,6 +41,10 @@ wait 1000
 touch 240 184               # THIS IS RIGHT
 wait 1500
 screenshot out/main.png device
+# Landscape only: ROTATION LOCK starts on, so the title bar's top-right
+# corner, where the rotate button would be, does nothing (test.expect).
+touch 466 12
+wait 1500
 
 # Something to find: a Flock camera's setup network, then a Flipper Zero.
 radio ap b4:1e:52:00:11:22 6 3 -58 FLOCK-CAM-2291

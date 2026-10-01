@@ -14,9 +14,10 @@ All of SquachWatch's UI is here at the 480×320 of its 3.5" build, including
 Squachy, the alert cards, HUNT, LOG, DESK, settings, the dex and diagnostics.
 Detections come from the FREE-WILi 2's stock Wi-Fi and Bluetooth scans.
 
-Landscape only: SquachWatch's rotate button also offers portrait, which the
-port doesn't draw. The screen stops updating until you rotate back to
-landscape.
+Landscape only, as the FREE-WILi 2's screen sits in the hand: SquachWatch's
+ROTATION LOCK setting starts on, so there's no rotate button. If you turn it
+off, the button skips the portrait orientations, which the port doesn't
+draw, and goes straight to the next landscape one.
 
 ## What the stock radio can see
 
