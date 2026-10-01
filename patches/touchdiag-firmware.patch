@@ -5,11 +5,14 @@
 #     cd SquachWatch-CYD && git apply ../patches/touchdiag-firmware.patch
 #
 # then build with -DSQUACH_TOUCH_DIAG=ON. Revert with git checkout src/main.cpp.
+#
+# Cut against the commit the submodule is PINNED at (79d755a), not master:
+# a patch made against the tip does not apply to the pinned tree.
 diff --git a/src/main.cpp b/src/main.cpp
-index 0fe5ab6..0ff73a9 100644
+index 32e5dcb..fc9fb71 100644
 --- a/src/main.cpp
 +++ b/src/main.cpp
-@@ -4160,6 +4160,44 @@ void loop() {
+@@ -3600,6 +3600,44 @@ void loop() {
          touchJustDown = false;
          touchJustUp = false;
      }
@@ -52,5 +55,5 @@ index 0fe5ab6..0ff73a9 100644
 +    }
 +#endif
      engine.loop();
-     Lora::tick(now);   // nothing outside a SQUACH_LORA build
- #if SQUACH_LORA && defined(TWATCH_S3)
+     floodTick();   // nothing outside a FLOOD_BENCH build
+     // The heap at the first pass of loop(), for DIAGNOSTICS' BOOT line.
