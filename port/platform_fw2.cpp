@@ -155,7 +155,25 @@ static void pollInput() {
     uint16_t x, y;
     if (ft6336_poll(&x, &y)) {
         SimTouch::down = true;
-        screenToRaw(x * tft.width() / LCD_W, y * tft.height() / LCD_H);
+        const int tx = x * tft.width() / LCD_W, ty = y * tft.height() / LCD_H;
+        screenToRaw(tx, ty);
+#if SQUACH_TOUCH_DIAG
+        // The other half of [touchdiag]: what this layer HANDS the firmware,
+        // against what the firmware then reports it saw. They disagree if the
+        // panel-to-screen scale, the rotation in screenToRaw() or SquachWatch's
+        // own calibration fit is wrong -- and agree, on a point that still does
+        // nothing, if the press is simply being dropped between loop passes.
+        {
+            static int d_lx = -1, d_ly = -1;
+            if (tx != d_lx || ty != d_ly) {
+                DIAG("[touchfeed] panel %u,%u -> screen %d,%d (tft %dx%d, rot %u) raw %u,%u\n",
+                     (unsigned)x, (unsigned)y, tx, ty, tft.width(), tft.height(),
+                     (unsigned)screenRotation,
+                     (unsigned)SimTouch::rawX, (unsigned)SimTouch::rawY);
+                d_lx = tx; d_ly = ty;
+            }
+        }
+#endif
     } else if (s_barButton >= 0) {
         const Theme::ButtonBarGeom g = Theme::computeButtonBar(tft.width(), tft.height());
         SimTouch::down = true;
