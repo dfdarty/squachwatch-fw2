@@ -1,0 +1,56 @@
+# Firmware-side half of the SQUACH_TOUCH_DIAG logging. SquachWatch-CYD is a
+# submodule of someone else's repo, so it cannot be committed there -- apply it
+# in the submodule when you need the log:
+#
+#     cd SquachWatch-CYD && git apply ../patches/touchdiag-firmware.patch
+#
+# then build with -DSQUACH_TOUCH_DIAG=ON. Revert with git checkout src/main.cpp.
+diff --git a/src/main.cpp b/src/main.cpp
+index 0fe5ab6..0ff73a9 100644
+--- a/src/main.cpp
++++ b/src/main.cpp
+@@ -4160,6 +4160,44 @@ void loop() {
+         touchJustDown = false;
+         touchJustUp = false;
+     }
++#if SQUACH_TOUCH_DIAG
++    // Why a tap did nothing, in one line. Built only with -DSQUACH_TOUCH_DIAG=1.
++    //
++    // Each of the five flags below can swallow a press on its own, and from
++    // the outside they are indistinguishable -- the screen simply does not
++    // react. On a slow host (the FW2 browser build samples touch ~3x a
++    // second) the window in which a press is both SEEN and still counts as a
++    // tap is about one loop pass wide, so which one ate it matters.
++    //
++    //   valid      pollTouch() accepted the reading at all
++    //   x,y        where it landed, in SCREEN coords, after the calibration
++    //              fit and rotation -- compare against the gear's own box
++    //   gear       whether that point is inside Theme::settingsButtonHit()
++    //   dim/swal   the screen was dimmed, so this gesture only wakes it. The
++    //              emulator cannot show brightness, so this is invisible there
++    //   held       Squachy is being carried: the title-bar gear is gated on
++    //              !Squachy::isHeld(), and a grab whose release was dropped
++    //              leaves the gear dead with nothing on screen to say so
++    //   dt         ms since the last accepted touch, against TOUCH_DEBOUNCE_MS
++    {
++        static bool     d_prevValid = false;
++        static uint32_t d_lastPrint = 0;
++        const bool changed = tp.valid != d_prevValid;
++        if (changed || (uint32_t)(now - d_lastPrint) >= 2000) {
++            Serial.printf("[touchdiag] valid %d  x %d y %d  gear %d  rot %u  "
++                          "dim %d swal %d held %d  dt %lu  screen %dx%d\n",
++                          (int)tp.valid, tp.x, tp.y,
++                          (int)(tp.valid && Theme::settingsButtonHit(tp.x, tp.y)),
++                          (unsigned)screenRotation,
++                          (int)s_screenDimmed, (int)s_swallowTouch,
++                          (int)Squachy::isHeld(),
++                          (unsigned long)(now - lastTouch),
++                          tft.width(), tft.height());
++            d_lastPrint = now;
++        }
++        d_prevValid = tp.valid;
++    }
++#endif
+     engine.loop();
+     Lora::tick(now);   // nothing outside a SQUACH_LORA build
+ #if SQUACH_LORA && defined(TWATCH_S3)
