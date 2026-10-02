@@ -34,11 +34,18 @@ struct ble_addr_t { uint8_t type; uint8_t val[6]; };
 class NimBLEAddress {
 public:
     NimBLEAddress() { memset(&_a, 0, sizeof _a); }
-    explicit NimBLEAddress(const uint8_t mac[6]) { _a.type = 0; memcpy(_a.val, mac, 6); }
+    // `mac` in printed order (AA:BB:...:FF, as the FW2's scan reports it).
+    // NimBLE keeps an address least-significant byte first, and prints it
+    // the other way round; SquachWatch relies on both (it flips the bytes
+    // into printed order itself, from v1.24.0 on).
+    explicit NimBLEAddress(const uint8_t mac[6]) {
+        _a.type = 0;
+        for (int i = 0; i < 6; i++) _a.val[i] = mac[5 - i];
+    }
     const ble_addr_t* getBase() const { return &_a; }
     std::string toString() const {
         char b[18];
-        snprintf(b, sizeof b, "%02x:%02x:%02x:%02x:%02x:%02x", _a.val[0], _a.val[1], _a.val[2], _a.val[3], _a.val[4], _a.val[5]);
+        snprintf(b, sizeof b, "%02x:%02x:%02x:%02x:%02x:%02x", _a.val[5], _a.val[4], _a.val[3], _a.val[2], _a.val[1], _a.val[0]);
         return b;
     }
 private:
@@ -68,11 +75,7 @@ public:
     bool        isLegacyAdvertisement() const { return true; }
     bool        isScannable() const { return false; }
     int         getRSSI() const { return _rssi; }
-    // By reference, where NimBLE-Arduino returns a copy: detection.cpp takes
-    // getName().c_str() into a pointer and reads it on the next line, which
-    // with a copy reads a destroyed temporary. With the reference the
-    // pointer stays good while the result is handled.
-    const std::string& getName() const { return _name; }
+    std::string getName() const { return _name; }   // a copy, as NimBLE-Arduino 2.x returns
     bool        haveName() const { return !_name.empty(); }
     bool        haveManufacturerData() const { return false; }
     uint8_t     getManufacturerDataCount() const { return 0; }

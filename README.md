@@ -2,7 +2,8 @@
 
 [SquachWatch](https://github.com/skizzophrenic/SquachWatch-CYD), the
 surveillance-device detector for the ESP32 "Cheap Yellow Display", running
-on the [FREE-WILi 2](https://freewili.com). It uses SquachWatch's own
+on the [FREE-WILi 2](https://freewili.com). This build follows SquachWatch
+v1.26.0 "Off the Grid" (the `SquachWatch-CYD` submodule). It uses SquachWatch's own
 firmware sources, unmodified (the `SquachWatch-CYD` submodule), and supplies
 the FREE-WILi 2 underneath them in `port/`: screen, touch, buttons, clock,
 SD card and radios.
